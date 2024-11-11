@@ -1,7 +1,5 @@
 import { BrowserFingerprintWithHeaders, FingerprintGeneratorOptions } from 'fingerprint-generator';
-// @ts-ignore optional peer dependency
 import { BrowserContext, Browser as PWBrowser, BrowserContextOptions } from 'playwright';
-// @ts-ignore optional peer dependency
 import { Page, Browser as PPBrowser } from 'puppeteer';
 /**
  * Fingerprint injector class.

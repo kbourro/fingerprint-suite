@@ -1,15 +1,14 @@
-const selfObj = typeof window !== 'undefined' ? window : globalThis;
-const isHeadlessChromium = /headless/i.test(selfObj.navigator.userAgent) && selfObj.navigator.plugins.length === 0;
-const isChrome = selfObj.navigator.userAgent.includes("Chrome");
-const isFirefox = selfObj.navigator.userAgent.includes("Firefox");
-const isSafari = selfObj.navigator.userAgent.includes("Safari") && !selfObj.navigator.userAgent.includes("Chrome");
+const isHeadlessChromium = /headless/i.test(globalThis.navigator.userAgent) && globalThis.navigator.plugins.length === 0;
+const isChrome = globalThis.navigator.userAgent.includes("Chrome");
+const isFirefox = globalThis.navigator.userAgent.includes("Firefox");
+const isSafari = globalThis.navigator.userAgent.includes("Safari") && !globalThis.navigator.userAgent.includes("Chrome");
 
 let slim = null;
 function getSlim() {
     if(slim === null) {
-        slim = selfObj.slim || false;
-        if(typeof selfObj.slim !== 'undefined') {
-            delete selfObj.slim;
+        slim = globalThis.slim || false;
+        if(typeof globalThis.slim !== 'undefined') {
+            delete globalThis.slim;
         }
     }
 
@@ -321,10 +320,10 @@ function overrideWebGl(webGl) {
             overridePropertyWithProxy(obj, propName, getParameterProxyHandler);
         }
         // For whatever weird reason loops don't play nice with Object.defineProperty, here's the next best thing:
-        if(WebGLRenderingContext !== undefined)
-            addProxy(WebGLRenderingContext.prototype, 'getParameter');
-        if(WebGL2RenderingContext !== undefined)
-            addProxy(WebGL2RenderingContext.prototype, 'getParameter');
+        if(globalThis.WebGLRenderingContext !== undefined)
+            addProxy(globalThis.WebGLRenderingContext.prototype, 'getParameter');
+        if(globalThis.WebGL2RenderingContext !== undefined)
+            addProxy(globalThis.WebGL2RenderingContext.prototype, 'getParameter');
     } catch (err) {
         console.warn(err);
     }
@@ -332,7 +331,7 @@ function overrideWebGl(webGl) {
 
 // eslint-disable-next-line no-unused-vars
 const overrideCodecs = (audioCodecs, videoCodecs) => {
-    if(HTMLMediaElement===undefined) return;
+    if(globalThis.HTMLMediaElement===undefined) return;
     try {
         const codecs = {
             ...Object.fromEntries(Object.entries(audioCodecs).map(([key, value]) => [`audio/${key}`, value])),
@@ -374,7 +373,7 @@ const overrideCodecs = (audioCodecs, videoCodecs) => {
         };
 
         overridePropertyWithProxy(
-            HTMLMediaElement.prototype,
+            globalThis.HTMLMediaElement.prototype,
             'canPlayType',
             canPlayType,
         );
@@ -385,7 +384,7 @@ const overrideCodecs = (audioCodecs, videoCodecs) => {
 
 // eslint-disable-next-line no-unused-vars
 function overrideBattery(batteryInfo) {
-    if(selfObj.navigator === undefined || selfObj.navigator.getBattery === undefined) return;
+    if(globalThis.navigator === undefined || globalThis.navigator.getBattery === undefined) return;
     try {
         const getBattery = {
             ...prototypeProxyHandler,
@@ -395,9 +394,9 @@ function overrideBattery(batteryInfo) {
             },
         };
 
-        if(selfObj.navigator.getBattery) { // Firefox does not have this method - to be fixed
+        if(globalThis.navigator.getBattery) { // Firefox does not have this method - to be fixed
             overridePropertyWithProxy(
-                Object.getPrototypeOf(selfObj.navigator),
+                Object.getPrototypeOf(globalThis.navigator),
                 'getBattery',
                 getBattery,
             );
@@ -408,7 +407,7 @@ function overrideBattery(batteryInfo) {
 }
 
 function overrideIntlAPI(language){
-    if(window===undefined) return;
+    if(globalThis.window===undefined) return;
     try {
         const innerHandler = {
             construct(target, [locales, options]) {
@@ -419,7 +418,7 @@ function overrideIntlAPI(language){
             }
           };
 
-        overridePropertyWithProxy(window, 'Intl', {
+        overridePropertyWithProxy(globalThis.window, 'Intl', {
             get(target, key){
                 if(typeof key !== 'string' || key[0].toLowerCase() === key[0]) return target[key];
                 return new Proxy(
@@ -466,7 +465,7 @@ function overrideScreenByReassigning(target, newProperties) {
 // eslint-disable-next-line no-unused-vars
 function overrideWindowDimensionsProps(props) {
     try {
-        overrideScreenByReassigning(window, props);
+        overrideScreenByReassigning(globalThis.window, props);
     } catch (e) {
         console.warn(e);
     }
@@ -505,29 +504,29 @@ function blockWebRTC() {
 
     const ConstrProxy = new Proxy(Object, handler);
     const proxy = new Proxy(() => {}, handler);
-    if(selfObj.navigator!==undefined) {
-        if(selfObj.navigator.mediaDevices !== undefined)
-            replace(selfObj.navigator.mediaDevices, 'getUserMedia', proxy);
-        if(selfObj.navigator.webkitGetUserMedia !== undefined)
-            replace(selfObj.navigator, 'webkitGetUserMedia', proxy);
-        if(selfObj.navigator.mozGetUserMedia !== undefined)
-            replace(selfObj.navigator, 'mozGetUserMedia', proxy);
-        if(selfObj.navigator.getUserMedia !== undefined)
-            replace(selfObj.navigator, 'getUserMedia`', proxy);
+    if(globalThis.navigator!==undefined) {
+        if(globalThis.navigator.mediaDevices !== undefined)
+            replace(globalThis.navigator.mediaDevices, 'getUserMedia', proxy);
+        if(globalThis.navigator.webkitGetUserMedia !== undefined)
+            replace(globalThis.navigator, 'webkitGetUserMedia', proxy);
+        if(globalThis.navigator.mozGetUserMedia !== undefined)
+            replace(globalThis.navigator, 'mozGetUserMedia', proxy);
+        if(globalThis.navigator.getUserMedia !== undefined)
+            replace(globalThis.navigator, 'getUserMedia`', proxy);
     }
-    if(window!==undefined) {
-        if(window.RTCPeerConnection !== undefined)
+    if(globalThis.window!==undefined) {
+        if(globalThis.window.RTCPeerConnection !== undefined)
             replace(window, 'webkitRTCPeerConnection', proxy);
-        if(window.MediaStreamTrack !== undefined)
+        if(globalThis.window.MediaStreamTrack !== undefined)
             replace(window, 'RTCPeerConnection', ConstrProxy);
-        if(window.webkitMediaStreamTrack !== undefined)
-            replace(window, 'MediaStreamTrack', ConstrProxy);
+        if(globalThis.window.MediaStreamTrack !== undefined)
+            replace(globalThis.window, 'MediaStreamTrack', ConstrProxy);
     }
 }
 
 // eslint-disable-next-line no-unused-vars
 function overrideUserAgentData(userAgentData) {
-    if(selfObj.navigator===undefined || selfObj.navigator.userAgentData===undefined) return;
+    if(globalThis.navigator===undefined || globalThis.navigator.userAgentData===undefined) return;
     try {
         const { brands, mobile, platform, ...highEntropyValues } = userAgentData;
         // Override basic properties
@@ -561,14 +560,14 @@ function overrideUserAgentData(userAgentData) {
             },
         };
 
-        if(selfObj.navigator.userAgentData){ // Firefox does not contain this property - to be fixed
+        if(globalThis.navigator.userAgentData){ // Firefox does not contain this property - to be fixed
             overridePropertyWithProxy(
-                Object.getPrototypeOf(selfObj.navigator.userAgentData),
+                Object.getPrototypeOf(globalThis.navigator.userAgentData),
                 'getHighEntropyValues',
                 getHighEntropyValues,
             );
 
-            overrideInstancePrototype(selfObj.navigator.userAgentData, { brands, mobile, platform });
+            overrideInstancePrototype(globalThis.navigator.userAgentData, { brands, mobile, platform });
         }
     } catch (e) {
         console.warn(e);
@@ -576,9 +575,9 @@ function overrideUserAgentData(userAgentData) {
 };
 
 function fixWindowChrome(){
-    if(window===undefined) return;
-    if(isChrome && !window.chrome){
-        Object.defineProperty(window, 'chrome', {
+    if(globalThis.window===undefined) return;
+    if(isChrome && !globalThis.window.chrome){
+        Object.defineProperty(globalThis.window, 'chrome', {
             writable: true,
             enumerable: true,
             configurable: false,
@@ -589,17 +588,17 @@ function fixWindowChrome(){
 
 // heavily inspired by https://github.com/berstend/puppeteer-extra/, check it out!
 function fixPermissions(){
-    if(document===undefined) return;
-    const isSecure = document.location.protocol.startsWith('https')
+    if(globalThis.document===undefined) return;
+    const isSecure = globalThis.document.location.protocol.startsWith('https')
 
-    if (isSecure && Notification !== undefined) {
-        overrideGetterWithProxy(Notification, 'permission', {
+    if (isSecure && globalThis.Notification !== undefined) {
+        overrideGetterWithProxy(globalThis.Notification, 'permission', {
             apply() {
                 return 'default'
             }
         });
     }
-    if(PermissionStatus===undefined) return;
+    if(globalThis.PermissionStatus===undefined) return;
     if (!isSecure) {
         const handler = {
             apply(target, ctx, args) {
@@ -617,18 +616,18 @@ function fixPermissions(){
                     state: 'denied',
                     onchange: null
                     },
-                    PermissionStatus.prototype
+                    globalThis.PermissionStatus.prototype
                 )
                 )
             }
         };
 
-        overridePropertyWithProxy(Permissions.prototype, 'query', handler)
+        overridePropertyWithProxy(globalThis.Permissions.prototype, 'query', handler)
     }
 }
 
 function fixIframeContentWindow(){
-    if(window===undefined || document===undefined) return;
+    if(globalThis.window===undefined || globalThis.document===undefined) return;
     try {
         // Adds a contentWindow proxy to the provided iframe element
         const addContentWindowProxy = iframe => {
@@ -649,7 +648,7 @@ function fixIframeContentWindow(){
           }
 
           if (!iframe.contentWindow) {
-            const proxy = new Proxy(window, contentWindowProxy)
+            const proxy = new Proxy(globalThis.window, contentWindowProxy)
             Object.defineProperty(iframe, 'contentWindow', {
               get() {
                 return proxy
@@ -711,7 +710,7 @@ function fixIframeContentWindow(){
 
             // All this just due to iframes with srcdoc bug
             overridePropertyWithProxy(
-                document,
+                globalThis.document,
                 'createElement',
                 createElementHandler
             )
@@ -726,14 +725,14 @@ function fixIframeContentWindow(){
 }
 
 function fixPluginArray() {
-    if(navigator===undefined || navigator.plugins === undefined) return;
-    if(navigator.plugins.length !== 0){
+    if(globalThis.navigator===undefined || globalThis.navigator.plugins === undefined) return;
+    if(globalThis.navigator.plugins.length !== 0){
         return;
     }
 
-    Object.defineProperty(navigator, 'plugins', {
+    Object.defineProperty(globalThis.navigator, 'plugins', {
         get: () => {
-            const ChromiumPDFPlugin = Object.create(Plugin.prototype, {
+            const ChromiumPDFPlugin = Object.create(globalThis.Plugin.prototype, {
                 description: { value: 'Portable Document Format', enumerable: false },
                 filename: { value: 'internal-pdf-viewer', enumerable: false },
                 name: { value: 'Chromium PDF Plugin', enumerable: false },
@@ -762,7 +761,7 @@ function runHeadlessFixes(){
 
 function overrideStatic(){
     try {
-        selfObj.SharedArrayBuffer = undefined;
+        globalThis.SharedArrayBuffer = undefined;
     } catch (e) {
         console.error(e);
     }

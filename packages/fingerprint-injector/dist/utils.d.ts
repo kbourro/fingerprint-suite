@@ -52,7 +52,6 @@ declare function fixIframeContentWindow(): void;
 declare function fixPluginArray(): void;
 declare function runHeadlessFixes(): void;
 declare function overrideStatic(): void;
-declare const selfObj: typeof globalThis;
 declare const isHeadlessChromium: boolean;
 declare const isChrome: boolean;
 declare const isFirefox: boolean;
