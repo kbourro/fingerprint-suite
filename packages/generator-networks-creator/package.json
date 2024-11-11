@@ -30,7 +30,7 @@
         "build": "npm run compile && npm run copyfiles",
         "clean": "rimraf ./dist",
         "compile": "tsc -p tsconfig.build.json && gen-esm-wrapper ./dist/index.js ./dist/index.mjs",
-        "copyfiles": "cp -r ./src/network_structures ./dist",
+        "copyfiles": "copyfiles -u 1 \"src/network_structures/**/*\" dist/",
         "copy": "ts-node -T ../../scripts/copy.ts"
     }
 }

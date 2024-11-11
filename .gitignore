@@ -1,5 +1,4 @@
 build
-dist
 build-docs
 node_modules
 *.log
